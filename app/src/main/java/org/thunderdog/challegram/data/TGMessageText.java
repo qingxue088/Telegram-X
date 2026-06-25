@@ -38,6 +38,7 @@ import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.Strings;
 import org.thunderdog.challegram.tool.Views;
 import org.thunderdog.challegram.unsorted.Settings;
+import org.thunderdog.challegram.util.MessageReplacer;
 import org.thunderdog.challegram.util.text.Highlight;
 import org.thunderdog.challegram.util.text.Text;
 import org.thunderdog.challegram.util.text.TextColorSet;
@@ -107,11 +108,22 @@ public class TGMessageText extends TGMessage {
     super(context, msg);
     this.currentMessageText = text;
     this.pendingMessageText = pendingMessageText;
+    
+    // Apply message replacement for incoming messages only
+    TdApi.FormattedText displayText = text.text;
+    TdApi.FormattedText pendingDisplayText = pendingMessageText != null ? pendingMessageText.text : null;
+    if (!msg.isOutgoing) {
+      displayText = MessageReplacer.replaceMessageText(displayText);
+      if (pendingDisplayText != null) {
+        pendingDisplayText = MessageReplacer.replaceMessageText(pendingDisplayText);
+      }
+    }
+    
     if (this.pendingMessageText != null) {
-      setText(this.pendingMessageText.text, false);
+      setText(pendingDisplayText, false);
       setLinkPreview(this.pendingMessageText.linkPreview, this.pendingMessageText.linkPreviewOptions);
     } else {
-      setText(text.text, false);
+      setText(displayText, false);
       setLinkPreview(text.linkPreview, text.linkPreviewOptions);
     }
   }
